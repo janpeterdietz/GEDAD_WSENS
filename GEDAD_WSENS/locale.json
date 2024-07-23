@@ -1,0 +1,9 @@
+{
+    "translations": {
+        "de": {
+            "Update Interval": "Akutualisierungsintervall",
+            "seconds": "Sekunden",
+            "IP address": "IP Adresse"
+        }
+    }
+}

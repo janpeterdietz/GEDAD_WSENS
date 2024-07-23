@@ -1,0 +1,12 @@
+{
+    "id": "{1941FFAB-F5E4-2416-CAC0-E1D67E1E0071}",
+    "name": "GEDAD_WSENS",
+    "type": 3,
+    "vendor": "GEDAD",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "WSENS",
+    "url": ""
+}

@@ -1,0 +1,11 @@
+{
+    "elements": [
+        { "type": "NumberSpinner", "name": "UpdateInterval", "caption": "Update Interval", "suffix": "seconds", "minimum":5 },
+        { "type": "ValidationTextBox", "name": "IPAddress", "caption": "IP address" }
+    ],
+    "actions": [],
+    "status": [
+        { "code": 102, "icon": "active", "Status": "Logged in!", "caption": "Sensor active" },
+        { "code": 200, "icon": "error", "Status": "Error!", "caption": "Sensor send no data" }
+    ]
+}
