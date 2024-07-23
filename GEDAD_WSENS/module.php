@@ -30,7 +30,7 @@ declare(strict_types=1);
 			$this->SetTimerInterval("UpdateSensorData", ($this->ReadPropertyInteger("UpdateInterval"))*1000);
 
 			$this->UpdateResult();
-			
+
 		}
 	
 		public function UpdateResult()
@@ -64,7 +64,7 @@ declare(strict_types=1);
 			else
 			{
 				$this->SetStatus(200);
-				$this->SetTimerInterval("UpdateSensorData", 0);
+				//$this->SetTimerInterval("UpdateSensorData", 0);
 			}
 			
 		}
