@@ -69,24 +69,63 @@ declare(strict_types=1);
 			
 		}
 
-		private function CalculateDuePoint(int $humidity, float $temperature)
+		private function CalculateDuePoint(int $humidity, float $temperature) : float
 		{
-			$kT = $temperature ;
-			$kR = $humidity ;
-			
-			$a =  7.5;
-			$b =  237.3;
-			
-			$SDD = 6.1078 * pow(10.0, ($a*$kT)/($b+$kT));
-			
-			$DD = $kR/100.0 * $SDD;
-			$v = log10($DD/6.1078);
-			
-			$kTD = $b*$v/($a-$v);
-
-			return $kTD;
+			//Source https://www.wetterochs.de/wetter/feuchte.html
+	
+			/*Bezeichnungen:
+				r = relative Luftfeuchte
+				T = Temperatur in °C
+				TK = Temperatur in Kelvin (TK = T + 273.15)
+				TD = Taupunkttemperatur in °C
+				DD = Dampfdruck in hPa
+				SDD = Sättigungsdampfdruck in hPa
+	
+				Parameter:
+				a = 7.5, b = 237.3 für T >= 0
+				a = 7.6, b = 240.7 für T < 0 über Wasser (Taupunkt)
+				a = 9.5, b = 265.5 für T < 0 über Eis (Frostpunkt)
+	
+				R* = 8314.3 J/(kmol*K) (universelle Gaskonstante)
+				mw = 18.016 kg/kmol (Molekulargewicht des Wasserdampfes)
+				AF = absolute Feuchte in g Wasserdampf pro m3 Luft
+	
+				Formeln:
+				SDD(T) = 6.1078 * 10^((a*T)/(b+T))
+				DD(r,T) = r/100 * SDD(T)
+				r(T,TD) = 100 * SDD(TD) / SDD(T)
+				TD(r,T) = b*v/(a-v) mit v(r,T) = log10(DD(r,T)/6.1078)
+				AF(r,TK) = 10^5 * mw/R* * DD(r,T)/TK; AF(TD,TK) = 10^5 * mw/R* * SDD(TD)/TK
+				*/
+	
+			if ($temperature >= 0) {
+				$a = 7.5;
+				$b = 237.3;
+			} else {
+				$a = 7.6;
+				$b = 240.7;
+			}
+	
+			$SDD = function ($temperature) use ($a, $b)
+			{
+				$this->SendDebug('Sättitigungsdampfdruck', 6.1078 * pow(10, (($a * $temperature) / ($b + $temperature))) . ' hPa', 0);
+				return 6.1078 * pow(10, (($a * $temperature) / ($b + $temperature)));
+			};
+	
+			$DD = function ($humidity, $temperature) use ($SDD)
+			{
+				$this->SendDebug('Dampfdruck', $humidity / 100 * $SDD($temperature) . ' hPa', 0);
+				return $humidity / 100 * $SDD($temperature);
+			};
+	
+			$v = function ($humidity, $temperature) use ($DD)
+			{
+				return log10($DD($humidity, $temperature) / 6.1078);
+			};
+	
+			$dewPoint = $b * $v($humidity, $temperature) / ($a - $v($humidity, $temperature));
+	
+			return $dewPoint;
 		}
-
-
 	
 	}
