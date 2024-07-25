@@ -13,7 +13,11 @@ declare(strict_types=1);
 			$this->RegisterVariableInteger ("AirQualityIndex", "Air Quality Index", "", 30) ;
 			$this->RegisterVariableInteger ("CO2", "CO2", "~Occurrence.CO2", 40) ;
 			$this->RegisterVariableFloat ("DuePoint", "DuePoint", "~Temperature", 50) ;
-			$this->RegisterVariableInteger ("WhiteLightIntensity", "WhiteLightIntensity", "~Illumination", 60) ;
+
+			$this->RegisterVariableFloat ("MoldRisk", "MoldRisk", "~Temperature", 60) ;
+			$this->RegisterVariableBoolean('MoldAlert', "MoldAlert", '~Alert', 70);
+			
+			$this->RegisterVariableInteger ("WhiteLightIntensity", "WhiteLightIntensity", "~Illumination", 90) ;
 			
 			$this->RegisterPropertyInteger("UpdateInterval", 60);
 			$this->RegisterPropertyString("IPAddress", "192.168.178.1");
@@ -26,7 +30,7 @@ declare(strict_types=1);
 		{
 			//Never delete this line!
 			parent::ApplyChanges();
-
+			$this->SetSummary($this->ReadPropertyString("IPAddress"));
 			$this->SetTimerInterval("UpdateSensorData", ($this->ReadPropertyInteger("UpdateInterval"))*1000);
 
 			$this->UpdateResult();
@@ -55,7 +59,8 @@ declare(strict_types=1);
 
 				//$this->SetValue("DuePoint", 'WSENS_CalculateDuePoint(' . $this->InstanceID . ', $humidity, $temp );');
 				$this->SetValue("DuePoint", $this->CalculateDuePoint( $humidity, $temp ));
-
+				$this->SetValue("MoldRisk", $this->CalculateMoldRisk( $humidity, $temp ));
+				
 
 				$this->SetValue("WhiteLightIntensity", intval($data["Intensitaet-Weiss"]));
 
@@ -126,6 +131,37 @@ declare(strict_types=1);
 			$dewPoint = $b * $v($humidity, $temperature) / ($a - $v($humidity, $temperature));
 	
 			return $dewPoint;
+		}
+
+		private function CalculateMoldRisk(int $humidity, float $temperature): float
+		{
+			//DewPoint + ~3.3°C
+			//Source https://sicherheitsingenieur.nrw/rechner/taupunkt-berechnen-schimmelgefahr/
+	
+			$dewPoint = $this->CalculateDuePoint($humidity, $temperature);
+			$moldPoint = $dewPoint + 3.3;
+	
+			$this->SetAlert($moldPoint, $temperature);
+	
+			return $moldPoint;
+		}
+	
+		private function SetAlert($moldPoint, $temperature)
+		{
+			//Set Alert true if it is false and moldpoint higher equal than temperature
+			//Set Alert false if it is true and temperature is higher than moldpoint +1°C
+	
+			$alert = $this->GetValue('MoldAlert');
+	
+			$this->SendDebug('AlertValue', $alert, 0);
+			$this->SendDebug('Moldpoint', $moldPoint, 0);
+			$this->SendDebug('Temperature', $temperature, 0);
+	
+			if (!$alert && ($moldPoint >= $temperature)) {
+				$this->SetValue('MoldAlert', true);
+			} elseif ($alert && (($moldPoint + 1) < $temperature)) {
+				$this->SetValue('MoldAlert', false);
+			}
 		}
 	
 	}
