@@ -76,7 +76,7 @@ declare(strict_types=1);
 			
 		}
 
-		private function CalculateDuePoint(int $humidity, float $temperature) : float
+		public function CalculateDuePoint(int $humidity, float $temperature) : float
 		{
 			//Source https://www.wetterochs.de/wetter/feuchte.html
 	
@@ -105,10 +105,12 @@ declare(strict_types=1);
 				AF(r,TK) = 10^5 * mw/R* * DD(r,T)/TK; AF(TD,TK) = 10^5 * mw/R* * SDD(TD)/TK
 				*/
 	
-			if ($temperature >= 0) {
+			if ($temperature >= 0) 
+			{
 				$a = 7.5;
 				$b = 237.3;
-			} else {
+			} else 
+			{
 				$a = 7.6;
 				$b = 240.7;
 			}
